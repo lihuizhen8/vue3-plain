@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+</head>
+<body>
+  <script src="./reactivity.global.js"></script>
+
+  <!-- <script src="../../node_modules/@vue/reactivity/dist/reactivity.global.js"></script> -->
+  <div id="app"></div>
+  <script>
+    let waiting = false
+    const { effect, reactive } = VueReactivity
+    const state = reactive({ flag: true, name: 'jw', age: 30 })
+
+    let runner = effect(() => { // 该函数会默认先执行一次，对响应式数据取值（取值的过程中数据会依赖于当前的effect）
+      document.body.innerHTML = state.age
+    }, {
+        scheduler() { // 调度 如何更新自己决定(以下例子可以实现多次触发 只渲染一次)
+          console.log('run')
+          if(!waiting) {
+            waiting = true
+            setTimeout(() => {
+              runner()
+              waiting = false
+            })
+          }
+        }
+    })
+
+    state.age = 10000
+    state.age = 20000
+    state.age = 30000
+    state.age = 40000
+    state.age = 50000
+
+    // runner.effect.stop()
+    // setTimeout(() => {
+    //   state.age = 1000
+
+    //   setTimeout(() => {
+    //     runner()
+    //   }, 2000)
+    // }, 1000)
+
+    // setTimeout(() => {
+    //   state.flag = false
+    //   setTimeout(() => {
+    //     console.log('修改name，原则上不更新')
+    //     state.name = 'zf'
+    //   }, 1000)
+    // }, 1000)
+  </script>
+</body>
+</html>
